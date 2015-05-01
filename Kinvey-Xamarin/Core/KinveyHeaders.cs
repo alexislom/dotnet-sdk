@@ -42,7 +42,7 @@ namespace KinveyXamarin
 		/// <summary>
 		/// The user agent key.
 		/// </summary>
-        private static string userAgentKey = "user-agent";
+		private static string userAgentKey = "User-Agent";
 		/// <summary>
 		/// The user agent.
 		/// </summary>
@@ -54,6 +54,7 @@ namespace KinveyXamarin
         public KinveyHeaders() : base()
         {
 			this.Add(new HttpHeader() {Name = userAgentKey, Value = new List<string>(){userAgent}});
+			//TODO headers
 			this.Add(new HttpHeader() {Name = kinveyApiVersionKey, Value = new List<string>(){kinveyApiVersion}});
         }
 

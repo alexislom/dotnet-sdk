@@ -45,13 +45,21 @@ namespace RestSharp
             {
                 if (_restrictedHeaderActions.ContainsKey(header.Name))
                 {
+					//TODO headers
                     _restrictedHeaderActions[header.Name].Invoke(this.Instance, header.Value);
                 }
                 else
                 {
-                    this.Instance.Headers.Add(header.Name, header.Value);
+					//TODO headers
+					this.Instance.Headers.TryAddWithoutValidation(header.Name, header.Value);
                 }
             }
+
+			//TODO Headers
+			foreach (string key in _restrictedHeaderActions.Keys){
+				this.Instance.Headers.Remove(key);
+
+			}
 
             if (method == HttpMethod.Put || method == HttpMethod.Post || method.Method == "PATCH" || method == HttpMethod.Delete || method == HttpMethod.Options)
             {
@@ -92,6 +100,13 @@ namespace RestSharp
         {
             _restrictedHeaderActions.Add("Date", (r, v) => { /* Set by system */ });
             _restrictedHeaderActions.Add("Host", (r, v) => { /* Set by system */ });
+//			_restrictedHeaderActions.Add("Accept", (r, v) => _instance.Headers.Accept.ParseAdd(v.FirstOrDefault().ToString()));
+			_restrictedHeaderActions.Add("User-Agent", (r, v) => r.Headers.UserAgent.ParseAdd(v.FirstOrDefault().ToString()));
+//			_restrictedHeaderActions.Add("User-Agent", (r, v) => {});
+			_restrictedHeaderActions.Add("Accept", (r, v) => {});
+			//TODO headers
+
         }
+
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using RestSharp.Extensions;
+using KinveyUtils;
 
 namespace RestSharp
 {
@@ -27,7 +28,8 @@ namespace RestSharp
 
             http.Url = RestSharp.UriBuilder.Build(restClient.BaseUrl, request);
 
-            http.UserAgent = restClient.UserAgent;
+			//TODO headers
+            //http.UserAgent = restClient.UserAgent;
 
             if (request.Timeout> 0)
             {
@@ -49,25 +51,16 @@ namespace RestSharp
             {
                 http.Credentials = request.Credentials;
             }
-
+			//TODO headers
             var headers = request.Parameters
                             .Where(p => p.Type == ParameterType.HttpHeader)
                             .Select(p => new HttpHeader() { Name = p.Name, Value = new List<string>() { p.Value.ToString() } });
 
             foreach (var header in headers)
             {
-                http.Headers.Add(header);
+				http.Headers.Add (header);
             }
-
-            var cookies = request.Parameters
-                            .Where(p => p.Type == ParameterType.HttpHeader)
-                            .Select(p => new HttpCookie() { Name = p.Name, Value = p.Value.ToString() });
-            
-            foreach (var cookie in cookies)
-            {
-                http.Cookies.Add(cookie);
-            }
-
+				
             var @params = request.Parameters
                                 .Where(p => p.Type == ParameterType.GetOrPost && p.Value != null)
                                 .Select(p => new KeyValuePair<string, string>(p.Name, p.Value.ToString()));

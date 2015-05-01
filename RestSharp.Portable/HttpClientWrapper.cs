@@ -38,7 +38,9 @@ namespace RestSharp
         {
             if (request.UserAgent.HasValue())
             {
-                this.Instance.DefaultRequestHeaders.Add("user-agent", request.UserAgent);
+				//TODO headers
+                //this.Instance.DefaultRequestHeaders.Add("user-agent", request.UserAgent);
+				//this.Instance.DefaultRequestHeaders.UserAgent.ParseAdd(request.UserAgent);
             }
 
             if (request.Timeout != 0)

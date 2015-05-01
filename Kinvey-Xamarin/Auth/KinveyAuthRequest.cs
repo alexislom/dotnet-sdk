@@ -197,7 +197,7 @@ namespace KinveyXamarin
 
 			if (response.ErrorException != null || (int)response.StatusCode < 200 || (int) response.StatusCode > 300 )
 			{
-				throw NewExceptionOnError(response);
+				throw response.ErrorException;
 			}
 
 			return (RestResponse)response;

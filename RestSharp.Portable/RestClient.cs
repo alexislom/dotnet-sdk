@@ -127,11 +127,6 @@ namespace RestSharp
         {
             get 
             {
-                if (!this._userAgent.HasValue())
-                {
-                    this._userAgent = "RestSharp/" + version;
-                }
-
                 return this._userAgent;
             }
             set
@@ -394,9 +389,7 @@ namespace RestSharp
                 var converter = new HttpConverter();
 
                 var httpRequest = converter.ConvertTo(this, restRequest);
-
-	
-			
+						
 				IHttp http = new Http(httpRequest, this.FollowRedirects);
 
                 var httpResponse = await getResponse(http, httpMethod, token);

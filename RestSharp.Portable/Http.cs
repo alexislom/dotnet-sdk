@@ -29,6 +29,8 @@ using System.Threading.Tasks;
 using System.Net.Http.Headers;
 using System.Threading;
 
+
+
 namespace RestSharp
 {
 	/// <summary>
@@ -136,6 +138,10 @@ namespace RestSharp
 
             //token.ThrowIfCancellationRequested();
 
+			HttpRequestMessage backup = new HttpRequestMessage (this._message.Instance.Method, this._message.Instance.RequestUri);
+			backup.Headers.UserAgent.ParseAdd ("wat");
+
+
 
 			Logger.Log ("------------------------REQUEST");
 			Logger.Log(this._message.Instance.Method + " -> " + this._message.Instance.RequestUri.ToString());
@@ -143,17 +149,65 @@ namespace RestSharp
 				Logger.Log(h.Key + " -> " + h.Value.FirstOrDefault().ToString());
 			}
 			Logger.Log ("User-Agent -> (" + this._message.Instance.Headers.UserAgent + ")" );
-			Logger.Log ("Accepts -> (" + this._message.Instance.Headers.Accept + ")" );
+			Logger.Log ("Accept -> (" + this._message.Instance.Headers.Accept + ")" );
 			if (this._message.Instance.Content != null){
-				Logger.Log(this._message.Instance.Content);
+				Logger.Log(this._message.Instance.Content.ToString());
 			}
 
 			Logger.Log ("------------------------END REQUEST");
 
             try
             {
-                var responseMessage = await this._client.Instance.SendAsync(this._message.Instance, token);
-                await httpResponse.ConvertFromResponseMessage(responseMessage);
+
+				WebRequest request = WebRequest.Create (this._message.Instance.RequestUri.ToString());
+				request.Method = this._message.Instance.Method.ToString();
+
+				foreach(var h in this._message.Instance.Headers){
+					request.Headers[h.Key] = h.Value.FirstOrDefault();
+				}
+
+//				request.
+
+
+//				if (this._message.Instance.Content != null){
+//					Logger.Log(this._message.Instance.Content.ToString());
+//				}				// If required by the server, set the credentials.
+				//request.Credentials = CredentialCache.DefaultCredentials;
+//				request.Headers["UserAgent"]= "appname";
+				using (var response = (HttpWebResponse)(await Task<WebResponse>.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null)))
+				{
+					using (var responseStream = response.GetResponseStream())
+					{
+						using (var sr = new StreamReader(responseStream))
+						{
+
+							string received = await sr.ReadToEndAsync();
+							Logger.Log("sigh " + received);
+							HttpResponseMessage resp = new HttpResponseMessage(response.StatusCode);
+							resp.RequestMessage = this._message.Instance;
+
+							resp.Content = new StringContent(received);
+							await httpResponse.ConvertFromResponseMessage(resp);
+
+						}
+					}
+				}
+
+
+
+//
+//				HttpClient client = new HttpClient();
+//				HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, "http://msdn.microsoft.com/");
+//
+//				request.Headers.UserAgent.ParseAdd("New User Agent Value");
+//
+//				HttpResponseMessage response = await client.SendAsync(request);
+//				string resultCode = response.StatusCode.ToString();
+//
+//
+
+//                var responseMessage = await this._client.Instance.SendAsync(backup);
+//                await httpResponse.ConvertFromResponseMessage(responseMessage);
             }
             //catch (InvalidOperationException exc)
             //{
