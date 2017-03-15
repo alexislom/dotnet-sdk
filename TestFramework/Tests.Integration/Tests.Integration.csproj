@@ -84,6 +84,9 @@
     <Compile Include="Tests\DataStoreNetworkIntegrationTests.cs" />
     <Compile Include="Tests\DataStoreCacheIntegrationTests.cs" />
     <Compile Include="Tests\DataStoreSyncIntegrationTests.cs" />
+    <Compile Include="..\TestSupportFiles\PersonEntityMultipleAddresses.cs">
+      <Link>TestSupportFiles\PersonEntityMultipleAddresses.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Tests\" />

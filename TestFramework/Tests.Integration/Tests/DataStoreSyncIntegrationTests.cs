@@ -16,8 +16,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
-using Moq;
 using NUnit.Framework;
 
 using Kinvey;
@@ -1002,6 +1000,66 @@ namespace TestFramework
 			Assert.IsTrue(String.Compare(p.FirstName, savedPerson.FirstName) == 0);
 			AddressEntity savedAddr = savedPerson.MailAddress;
 			Assert.IsTrue(String.Compare(addr.Street, savedAddr.Street) == 0);
+
+			// Teardown
+			await personStore.RemoveAsync(addr.ID);
+			await addrStore.RemoveAsync(addr.ID);
+			kinveyClient.ActiveUser.Logout();
+		}
+
+		[Test]
+		public async Task TestORM_EntityWithCollection()
+		{
+			// Setup
+			if (kinveyClient.ActiveUser != null)
+			{
+				kinveyClient.ActiveUser.Logout();
+			}
+
+			await User.LoginAsync(TestSetup.user, TestSetup.pass, kinveyClient);
+
+			// Arrange
+			string collectionAddressName = "AddressEntity";
+			string collectionPersonName = "PersonEntity";
+
+			AddressEntity addr = new AddressEntity();
+			addr.IsApartment = true;
+			addr.Street = "1 Infinite Loop";
+			DataStore<AddressEntity> addrStore = DataStore<AddressEntity>.Collection(collectionAddressName, DataStoreType.SYNC, kinveyClient);
+			addr = await addrStore.SaveAsync(addr);
+
+			AddressEntity addr2 = new AddressEntity();
+			string addr2test = "{\"IsApartment\":false,\"Street\":\"2 Infinite Loop\"}";
+			addr2 = Newtonsoft.Json.JsonConvert.DeserializeObject<AddressEntity>(addr2test);
+			//addr2.IsApartment = false;
+			//addr2.Street = "2 Infinite Loop";
+			//DataStore<AddressEntity> addrStore = DataStore<AddressEntity>.Collection(collectionAddressName, DataStoreType.SYNC, kinveyClient);
+			addr2 = await addrStore.SaveAsync(addr2);
+
+			PersonEntityMultipleAddresses p = new PersonEntityMultipleAddresses();
+			string test = @"{'FirstName':'Steve','LastName':'Wozniak','MailAddressList':'[{\'IsApartment\':true,\'Street\':\'1 Infinite Loop\'},{\'IsApartment\':false,\'Street\':\'2 Infinite Loop\'}]'}";  //{'IsApartment': false, 'Street':'2 Infinite Loop'},{'IsApartment': true, 'Street':'1 Infinite Loop'}
+			p = Newtonsoft.Json.JsonConvert.DeserializeObject<PersonEntityMultipleAddresses>(test);
+			//p.FirstName = "Steve";
+			//p.LastName = "Wozniak";
+			//p.MailAddress.Add(addr);
+			//p.MailAddress.Add(addr2);
+			DataStore<PersonEntityMultipleAddresses> personStore = DataStore<PersonEntityMultipleAddresses>.Collection(collectionPersonName, DataStoreType.SYNC, kinveyClient);
+			p = await personStore.SaveAsync(p);
+
+			// Act
+			ICache<PersonEntityMultipleAddresses> cache = kinveyClient.CacheManager.GetCache<PersonEntityMultipleAddresses>(collectionPersonName);
+			List<PersonEntityMultipleAddresses> listPerson = cache.FindAll();
+
+			// Assert
+			Assert.NotNull(listPerson);
+			Assert.IsNotEmpty(listPerson);
+			PersonEntityMultipleAddresses savedPerson = listPerson.First();
+			Assert.NotNull(savedPerson);
+			Assert.IsTrue(String.Compare(p.FirstName, savedPerson.FirstName) == 0);
+			AddressEntity savedAddr = savedPerson.MailAddress.FirstOrDefault();
+			Assert.IsTrue(String.Compare(addr.Street, savedAddr.Street) == 0);
+			AddressEntity savedAddr2 = savedPerson.MailAddress[1];
+			Assert.IsTrue(String.Compare(addr2.Street, savedAddr2.Street) == 0);
 
 			// Teardown
 			await personStore.RemoveAsync(addr.ID);
