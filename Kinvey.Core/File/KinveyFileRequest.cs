@@ -33,7 +33,57 @@ namespace Kinvey
 
 		internal async Task uploadFileAsync(FileMetaData metadata, byte[] input)
 		{
-			await uploadFileAsync (metadata, new ByteArrayContent (input));
+			// First, send the empty request to determine the state of the resumable upload
+
+			// 1. To request the upload status, create an empty PUT request to the resumable session URI.
+			FileMetaData resumeStatusMetaData = new FileMetaData();
+			resumeStatusMetaData.uploadUrl = metadata.uploadUrl;
+			resumeStatusMetaData.mimetype = metadata.mimetype;
+
+			// 2. Add a Content-Range header indicating that the current position in the file is unknown.
+			// Format: */<total_size_of_file>
+			//resumeStatusMetaData.headers = new Dictionary<string, string>();
+			//resumeStatusMetaData.headers.Add("Content-Range", $"bytes */{metadata.size}");
+			resumeStatusMetaData.size = metadata.size;
+
+			// 3. Send the request.
+			HttpResponseMessage resumeStatusResponse = await UploadFileAsync(resumeStatusMetaData, new ByteArrayContent(new byte[0]));
+			//var resumeStatusResponse = await UploadInitResumable(resumeStatusMetaData, null);
+
+
+
+			// Second, check the response to determine if the file has already been uploaded.
+			switch ((int)resumeStatusResponse.StatusCode)
+			{
+				case 200: // OK
+				case 201: // Created
+					// File upload was completed, nothing to process
+					break;
+
+				case 308: // Resume Incomplete
+
+					// Get range header, and resume upload after the specified byte
+					foreach (var header in resumeStatusResponse.Headers)
+					{
+						//if (header.Key.Equals("Range"))
+						//{
+						//	// Get last known byte uploaded
+						//	break;
+						//}
+					}
+					break;
+
+				case 500: // Internal Server Error
+				case 502: // Bad Gateway
+				case 503: // Service Unavailable
+				case 504: // Gateway Timeout
+					break;
+
+				default:
+					break;
+			}
+
+			HttpResponseMessage response = await UploadFileAsync(metadata, new ByteArrayContent(input));
 		}
 
 		internal async Task uploadFileAsync(FileMetaData metadata, Stream input)
@@ -43,27 +93,56 @@ namespace Kinvey
 				input.Position = 0;
 			}
 
-			await uploadFileAsync(metadata, new StreamContent(input));
+			HttpResponseMessage response = await UploadFileAsync(metadata, new StreamContent(input));
 		}
 
-		private async Task<HttpResponseMessage> uploadFileAsync(FileMetaData metadata, HttpContent input)
+		private async Task<HttpResponseMessage> UploadFileAsync(FileMetaData metadata, HttpContent input)
 		{
 			string uploadURL = metadata.uploadUrl;
 
 			MediaTypeHeaderValue mt = new MediaTypeHeaderValue(metadata.mimetype);
 			input.Headers.ContentType = mt;
+			input.Headers.ContentRange = ContentRangeHeaderValue.Parse($"bytes */{metadata.size}");
 
 			var httpClient = new HttpClient(new NativeMessageHandler());
 			Uri requestURI = new Uri(uploadURL);
 
-			foreach (var header in metadata.headers)
+			if (metadata.headers != null)
 			{
-				httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+				foreach (var header in metadata.headers)
+				{
+					httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+					//KinveyUtils.Logger.Log("HEADER ${header.Key} -> ${header.Value}");
+				}
 			}
 
 			var response = await httpClient.PutAsync(requestURI, input);
-			response.EnsureSuccessStatusCode();
+			//response.EnsureSuccessStatusCode();
 			return response;
+		}
+
+		private async Task<IRestResponse> UploadInitResumable(FileMetaData metadata, HttpContent input)
+		{
+			RestClient restClient = new RestClient(metadata.uploadUrl);
+			RestRequest restRequest = new RestRequest();
+			System.Net.Http.HttpContent content = new ByteArrayContent(new byte[0]);
+			content.Headers.ContentType = new MediaTypeHeaderValue(metadata.mimetype);
+			content.Headers.ContentRange = ContentRangeHeaderValue.Parse($"bytes */{metadata.size}");
+			//content.Headers.Add("Content-Range", $"bytes */{metadata.size}");
+			//content.Headers.Add("Content-Type", metadata.mimetype);
+
+			restRequest.AddBody(content);
+			//restRequest.AddParameter("Content-Range", $"bytes */{metadata.size}", ParameterType.RequestBody);
+			//restRequest.AddHeader("Content-Range", $"bytes */{metadata.size}");
+			restRequest.Method = Method.PUT;
+			RestRequest request = BuildRestRequest();
+
+			restClient.Authenticator = RequestAuth;
+
+			var req = await restClient.ExecuteAsync(restRequest);
+			//var response = req.Result;
+			//return response;
+			return req;
 		}
 
 		#endregion
