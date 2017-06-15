@@ -433,7 +433,7 @@ namespace Kinvey
 			// TODO rethink locking
 			lock (classLock)
 			{
-				RealtimeRouter.Uninitialize();
+				//RealtimeRouter.Uninitialize();
 				this.KinveyClient.DeviceID = null;
 
 				LogoutRequest logoutRequest = buildLogoutRequest();
@@ -672,7 +672,7 @@ namespace Kinvey
 				string publishKey = responseRegister[Constants.STR_REALTIME_PUBLISH_KEY].ToString();
 				string subscribeKey = responseRegister[Constants.STR_REALTIME_SUBSCRIBE_KEY].ToString();
 
-				RealtimeRouter.Initialize(channelGroupName, publishKey, subscribeKey, AuthToken, uc);
+				//RealtimeRouter.Initialize(channelGroupName, publishKey, subscribeKey, AuthToken, uc);
 			}
 			catch (KinveyException ke)
 			{
@@ -692,7 +692,7 @@ namespace Kinvey
 		{
 			try
 			{
-				RealtimeRouter.Uninitialize();
+				//RealtimeRouter.Uninitialize();
 
 				// TODO make "Realtime Unregister" request to KCS, and throw any error received.
 				RealtimeUnregisterRequest realtimeRequest = BuildRealtimeUnregisterRequest(Id, KinveyClient.DeviceID);

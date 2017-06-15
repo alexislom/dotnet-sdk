@@ -406,7 +406,7 @@ namespace RestSharp
 				foreach(HttpHeader h in httpResponse.Headers){
 					Logger.Log(h.Name + " -> " + h.Value.FirstOrDefault().ToString());
 				}
-				Logger.Log(httpResponse.Content);
+				//Logger.Log(httpResponse.Content);
 				Logger.Log ("------------------------END RESPONSE");
 
                 response = converter.ConvertFrom(httpResponse);

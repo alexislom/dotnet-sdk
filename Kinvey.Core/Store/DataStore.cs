@@ -165,51 +165,51 @@ namespace Kinvey
 			return new DataStore<T> (type, collectionName, client);
 		}
 
-		#region Realtime
+		//#region Realtime
 
-		/// <summary>
-		/// Subscribe the specified callback.
-		/// </summary>
-		/// <param name="realtimeHandler">Delegate used to forward realtime messages.</param>
-		public async Task<bool> Subscribe(KinveyDataStoreDelegate<T> realtimeHandler)
-		{
-			bool success = false;
+		///// <summary>
+		///// Subscribe the specified callback.
+		///// </summary>
+		///// <param name="realtimeHandler">Delegate used to forward realtime messages.</param>
+		//public async Task<bool> Subscribe(KinveyDataStoreDelegate<T> realtimeHandler)
+		//{
+		//	bool success = false;
 
-			// TODO request subscribe access with KCS
-			var subscribeRequest = new SubscribeRequest<T>(client, collectionName, client.DeviceID);
-			var result = await subscribeRequest.ExecuteAsync();
+		//	// TODO request subscribe access with KCS
+		//	var subscribeRequest = new SubscribeRequest<T>(client, collectionName, client.DeviceID);
+		//	var result = await subscribeRequest.ExecuteAsync();
 
-			if (realtimeHandler != null)
-			{
-				RealtimeDelegate = realtimeHandler;
+		//	if (realtimeHandler != null)
+		//	{
+		//		RealtimeDelegate = realtimeHandler;
 
-				var routerDelegate = new KinveyRealtimeDelegate
-				{
-					OnError = (error) => RealtimeDelegate.OnError(error),
-					OnNext = (message) => {
-						var messageObj = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(message);
-						RealtimeDelegate.OnNext(messageObj);
-					},
-					OnStatus = (status) => RealtimeDelegate.OnStatus(status)
-				};
+		//		var routerDelegate = new KinveyRealtimeDelegate
+		//		{
+		//			OnError = (error) => RealtimeDelegate.OnError(error),
+		//			OnNext = (message) => {
+		//				var messageObj = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(message);
+		//				RealtimeDelegate.OnNext(messageObj);
+		//			},
+		//			OnStatus = (status) => RealtimeDelegate.OnStatus(status)
+		//		};
 
-				RealtimeRouter.Instance.SubscribeCollection(CollectionName, routerDelegate);
-				success = true;
-			}
+		//		RealtimeRouter.Instance.SubscribeCollection(CollectionName, routerDelegate);
+		//		success = true;
+		//	}
 
-			return success;
-		}
+		//	return success;
+		//}
 
-		/// <summary>
-		/// Unsubscribe this instance.
-		/// </summary>
-		public async Task Unsubscribe()
-		{
-			RealtimeRouter.Instance.UnsubscribeCollection(CollectionName);
-			RealtimeDelegate = null;
-		}
+		///// <summary>
+		///// Unsubscribe this instance.
+		///// </summary>
+		//public async Task Unsubscribe()
+		//{
+		//	RealtimeRouter.Instance.UnsubscribeCollection(CollectionName);
+		//	RealtimeDelegate = null;
+		//}
 
-		#endregion
+		//#endregion
 
 //		/// <summary>
 //		/// Get a single entity stored in a Kinvey collection.
@@ -421,7 +421,7 @@ namespace Kinvey
 
 			try
 			{
-				pullResponse = await this.PullAsync(query, ct);
+				pullResponse = await this.PullAsync(query, -1, false, ct);
 			}
 			catch (KinveyException e)
 			{

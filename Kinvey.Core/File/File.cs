@@ -172,14 +172,14 @@ namespace Kinvey
 		/// <param name="metadata">The FileMetaData representing the file to download.  This must contain an id.</param>
 		/// <param name="content">Content.</param>
 		/// <param name="ct">[optional] The cancellation token.  If cancellation is requested, an OperationCancelledException will be thrown.</param>
-		public async Task<FileMetaData> downloadAsync(FileMetaData metadata, byte[] content, CancellationToken ct = default(CancellationToken))
+		public async Task<byte[]> downloadAsync(FileMetaData metadata, byte[] content, CancellationToken ct = default(CancellationToken))
 		{
 			DownloadFileWithMetaDataRequest downloadRequest = buildDownloadFileRequest(metadata);
 			ct.ThrowIfCancellationRequested();
 			FileMetaData fmd = await downloadRequest.ExecuteAsync();
 			ct.ThrowIfCancellationRequested();
-			await downloadRequest.downloadFileAsync(fmd, content);
-			return fmd;
+			content = await downloadRequest.downloadFileAsync(fmd, content);
+			return content;
 		}
 
 		/// <summary>

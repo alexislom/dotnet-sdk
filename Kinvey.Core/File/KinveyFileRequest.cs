@@ -77,10 +77,11 @@ namespace Kinvey
 			ms.CopyTo(stream);
 		}
 
-		internal async Task downloadFileAsync(FileMetaData metadata, byte[] output)
+		internal async Task<byte[]> downloadFileAsync(FileMetaData metadata, byte[] output)
 		{
 			IRestResponse response = await downloadFileAsync(metadata);
 			output = response.RawBytes;
+			return output;
 		}
 
 		private async Task<IRestResponse> downloadFileAsync(FileMetaData metadata)

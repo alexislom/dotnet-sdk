@@ -229,7 +229,7 @@ namespace TestFramework
 			byte[] downloadContent = new byte[downloadMetaData.size];
 
 			// Act
-			FileMetaData downloadFMD = await kinveyClient.File().downloadAsync(downloadMetaData, downloadContent);
+			downloadContent = await kinveyClient.File().downloadAsync(downloadMetaData, downloadContent);
 			System.IO.File.WriteAllBytes(downloadByteArrayFilePath, content);
 
 			// Assert

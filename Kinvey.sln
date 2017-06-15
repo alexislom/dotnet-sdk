@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestSharp.Portable", "RestS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kinvey.Net", "Kinvey.Net\Kinvey.Net.csproj", "{4B9F3DCA-E3B6-4C05-B6C1-F54A67559C2D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoSeedCache", "TestApps\DemoSeedCache\DemoSeedCache.csproj", "{36032B69-CD0F-43F7-8E4A-E79469A9209C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -296,6 +298,24 @@ Global
 		{4B9F3DCA-E3B6-4C05-B6C1-F54A67559C2D}.Ad-Hoc|iPhone.Build.0 = Release|Any CPU
 		{4B9F3DCA-E3B6-4C05-B6C1-F54A67559C2D}.AppStore|iPhone.ActiveCfg = Release|Any CPU
 		{4B9F3DCA-E3B6-4C05-B6C1-F54A67559C2D}.AppStore|iPhone.Build.0 = Release|Any CPU
+		{36032B69-CD0F-43F7-8E4A-E79469A9209C}.Debug|Any CPU.ActiveCfg = Debug|iPhoneSimulator
+		{36032B69-CD0F-43F7-8E4A-E79469A9209C}.Debug|Any CPU.Build.0 = Debug|iPhoneSimulator
+		{36032B69-CD0F-43F7-8E4A-E79469A9209C}.Release|Any CPU.ActiveCfg = Release|iPhone
+		{36032B69-CD0F-43F7-8E4A-E79469A9209C}.Release|Any CPU.Build.0 = Release|iPhone
+		{36032B69-CD0F-43F7-8E4A-E79469A9209C}.AppStore|Any CPU.ActiveCfg = Debug|iPhoneSimulator
+		{36032B69-CD0F-43F7-8E4A-E79469A9209C}.AppStore|Any CPU.Build.0 = Debug|iPhoneSimulator
+		{36032B69-CD0F-43F7-8E4A-E79469A9209C}.Debug|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator
+		{36032B69-CD0F-43F7-8E4A-E79469A9209C}.Debug|iPhoneSimulator.Build.0 = Debug|iPhoneSimulator
+		{36032B69-CD0F-43F7-8E4A-E79469A9209C}.Release|iPhoneSimulator.ActiveCfg = Release|iPhoneSimulator
+		{36032B69-CD0F-43F7-8E4A-E79469A9209C}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
+		{36032B69-CD0F-43F7-8E4A-E79469A9209C}.Debug|iPhone.ActiveCfg = Debug|iPhone
+		{36032B69-CD0F-43F7-8E4A-E79469A9209C}.Debug|iPhone.Build.0 = Debug|iPhone
+		{36032B69-CD0F-43F7-8E4A-E79469A9209C}.Release|iPhone.ActiveCfg = Release|iPhone
+		{36032B69-CD0F-43F7-8E4A-E79469A9209C}.Release|iPhone.Build.0 = Release|iPhone
+		{36032B69-CD0F-43F7-8E4A-E79469A9209C}.Ad-Hoc|iPhone.ActiveCfg = Release|iPhone
+		{36032B69-CD0F-43F7-8E4A-E79469A9209C}.Ad-Hoc|iPhone.Build.0 = Release|iPhone
+		{36032B69-CD0F-43F7-8E4A-E79469A9209C}.AppStore|iPhone.ActiveCfg = Release|iPhone
+		{36032B69-CD0F-43F7-8E4A-E79469A9209C}.AppStore|iPhone.Build.0 = Release|iPhone
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0
@@ -339,5 +359,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{2DEC54F1-9E2F-48C7-9F42-C9E9763E5FB3} = {2EF58001-786F-4585-B478-CFD3AEB6DB57}
 		{C125C233-4A09-44EC-BA58-2E8E91E91B63} = {2EF58001-786F-4585-B478-CFD3AEB6DB57}
+		{36032B69-CD0F-43F7-8E4A-E79469A9209C} = {2EF58001-786F-4585-B478-CFD3AEB6DB57}
 	EndGlobalSection
 EndGlobal
