@@ -83,3 +83,51 @@ task:
 #   build_kinvey_script: cd Kinvey; dotnet build
 #   build_script: cd TestFramework/Tests.Integration; msbuild
 #   test_script: coverlet TestFramework/Tests.Integration/bin/Debug/Tests.Integration.dll --target "mono" --targetargs "--debug packages/NUnit.ConsoleRunner.3.9.0/tools/nunit3-console.exe TestFramework/Tests.Integration/bin/Debug/Tests.Integration.dll" --format opencover
+
+task:
+  name: Build Android
+  osx_instance:
+    image: high-sierra-xcode-10.0
+  env:
+    MONO_HOME: /Library/Frameworks/Mono.framework/Versions/Current
+    ANDROID_SDK_ROOT: /usr/local/share/android-sdk
+    PATH: $PATH:$MONO_HOME/Commands
+    MONODROID_CONFIG: $HOME/.config/xbuild/monodroid-config.xml
+  brew_update_script: brew update
+  install_tree_script: brew install tree
+  install_mono_sdk_script: brew cask install mono-mdk
+  install_java_script: brew cask install java
+  install_android-sdk_script: brew cask install android-sdk
+  install_android-platform-tools_script: brew cask install android-platform-tools
+  install_android-ndk_script: brew cask install android-ndk
+  install_xamarin-android_script: brew cask install xamarin-android
+  monodroid-config_mkdir_script: mkdir -p ~/.config/xbuild
+  monodroid-config_header_script: echo "<?xml version=\"1.0\" encoding=\"utf-8\"?>" >> $MONODROID_CONFIG
+  monodroid-config_monodroid_begin_script: echo "<monodroid>" >> $MONODROID_CONFIG
+  monodroid-config_android-sdk_script: echo "<android-sdk path=\""$ANDROID_SDK_ROOT"\" />" >> $MONODROID_CONFIG
+  monodroid-config_monodroid_end_script: echo "</monodroid>" >> $MONODROID_CONFIG
+  monodroid-config_cat_script: cat $MONODROID_CONFIG
+  android_targets_script: cat /Library/Frameworks/Mono.framework/External/xbuild/Xamarin/Android/Xamarin.Android.Common.targets
+  # tree_script: tree $ANDROID_SDK_ROOT
+  # build_script: cd Kinvey.Android; msbuild /p:AndroidSdkDirectory=$ANDROID_SDK_ROOT
+  build_script: cd Kinvey.Android; msbuild
+
+task:
+  name: Publish
+  depends_on:
+    - Linux .Net
+    - macOS .Net
+  only_if: $CIRRUS_TAG =~ 'v?\d+\.\d+\.\d+' || $CIRRUS_TAG =~ 'v?\d+\.\d+\.\d+-alpha\d*' || $CIRRUS_TAG =~ 'v?\d+\.\d+\.\d+-beta\d*' || $CIRRUS_TAG =~ 'v?\d+\.\d+\.\d+-rc'
+  osx_instance:
+    image: high-sierra-xcode-10.0
+  brew_update_script: brew update
+  install_tree_script: brew install tree
+  install_xmlstarlet_script: brew install xmlstarlet
+  install_dotnet-sdk_script: brew cask install dotnet-sdk
+  install_mono_sdk_script: brew cask install mono-mdk
+  install_xamarin-android_script: brew cask install xamarin-android
+  free_disk_space_script: df -h
+  install_xamarin-ios_script: brew cask install xamarin-ios
+  # install_visual-studio_script: brew cask install visual-studio
+  show_version_script: make version
+  nuget_pack_script: make nuget-pack
