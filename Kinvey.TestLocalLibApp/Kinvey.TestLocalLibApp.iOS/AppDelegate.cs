@@ -27,5 +27,24 @@ namespace Kinvey.TestLocalLibApp.iOS
 
             return base.FinishedLaunching(app, options);
         }
+
+        public override  void RegisteredForRemoteNotifications(UIApplication application, NSData deviceToken)
+        {
+            Client.SharedClient.Push().Initialize(deviceToken.ToString());
+        }
+
+        public override void FailedToRegisterForRemoteNotifications(UIApplication application, NSError error)
+        {
+            
+        }
+
+        public override void ReceivedRemoteNotification(UIApplication application, NSDictionary userInfo)
+        {
+
+        }
+        public override void DidReceiveRemoteNotification(UIApplication application, NSDictionary userInfo, Action<UIBackgroundFetchResult> completionHandler)
+        {
+
+        }
     }
 }
