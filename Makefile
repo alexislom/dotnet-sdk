@@ -25,12 +25,11 @@ nuget-pack:
 		grep -v '<dependency id="Xamarin.Android.Support.Annotations"' | \
 		grep -v '<dependency id="Xamarin.Android.Support.Compat"' | \
 		grep -v '<dependency id="Xamarin.Android.Support.Core.UI"' | \
-		grep -v '<dependency id=""Xamarin.Android.Support.Core.Utils"' | \
+		grep -v '<dependency id="Xamarin.Android.Support.Core.Utils"' | \
 		grep -v '<dependency id="Xamarin.Android.Support.Fragment"' | \
 		grep -v '<dependency id="Xamarin.Android.Support.Media.Compat"' | \
 		grep -v '<dependency id="Xamarin.Build.Download"' | \
 		grep -v '<dependency id="Xamarin.Firebase.Common"' | \
-		grep -v '<dependency id="Xamarin.Firebase.Iid"' | \
 		grep -v '<dependency id="Xamarin.Firebase.Messaging"' | \
 		grep -v '<dependency id="Xamarin.GooglePlayServices.Basement"' | \
 		grep -v '<dependency id="Xamarin.GooglePlayServices.Tasks"' | \
