@@ -572,7 +572,9 @@ namespace Kinvey
 			catch(JsonException ex){
                 throw new KinveyException(EnumErrorCategory.ERROR_DATASTORE_NETWORK,
                                           EnumErrorCode.ERROR_JSON_PARSE,
-                                          $"For API call {response.RequestMessage.RequestUri} expected an {typeof(T)}" + Environment.NewLine + ex.Message)
+                                          ex.Message,
+                                          ex,
+                                          $"For API call {response.RequestMessage.RequestUri} expected an {typeof(T)}")
                                           {
                                               RequestID = HelperMethods.getRequestID(response)
                                           };
@@ -692,15 +694,14 @@ namespace Kinvey
 			}
             catch(JsonException ex)
             {
-                var kinveyException = new KinveyException(EnumErrorCategory.ERROR_DATASTORE_NETWORK,
-                                                          EnumErrorCode.ERROR_JSON_PARSE,
-                                                          $"For API call {response.RequestMessage.RequestUri} expected an {typeof(T)}" + Environment.NewLine + ex.Message,
-                                                          ex)
-                                                          {
-                                                              RequestID = HelperMethods.getRequestID(response)
-                                                          };
-
-                throw kinveyException;
+                throw new KinveyException(EnumErrorCategory.ERROR_DATASTORE_NETWORK,
+                                          EnumErrorCode.ERROR_JSON_PARSE,
+                                          ex.Message,
+                                          ex,
+                                          $"For API call {response.RequestMessage.RequestUri} expected an {typeof(T)}")
+                                          {
+                                              RequestID = HelperMethods.getRequestID(response)
+                                          };
 			}
 			catch(ArgumentException ex)
 			{
