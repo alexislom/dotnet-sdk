@@ -114,22 +114,20 @@ namespace Kinvey
 		/// <value>The status code.</value>
 		public int StatusCode { get; set; }
 
-        #endregion
+		#endregion
 
-        #region Constructors
+		#region Constructors
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="KinveyXamarin.KinveyException"/> class.
-        /// </summary>
-        /// <param name="errorCategory">The <see cref="KinveyXamarin.EnumErrorCategory"/>  of the exception.</param>
-        /// <param name="errorCode">The <see cref="KinveyXamarin.EnumErrorCode"/>  of the exception.</param>
-        /// <param name="info">Additional information about the exception, if available.</param>
-        /// <param name="innerException">[optional] Inner exception thrown, if available.</param>
-        /// <param name="message">The error message that explains the reason for the exception.</param>
-        public KinveyException(EnumErrorCategory errorCategory, EnumErrorCode errorCode, string info, Exception innerException = null, string message = "")
-            : base(string.IsNullOrEmpty(message) ? MessageFromErrorCode(errorCategory, errorCode) : message + Environment.NewLine + MessageFromErrorCode(errorCategory, errorCode),
-                innerException)
-        {
+		/// <summary>
+		/// Initializes a new instance of the <see cref="KinveyXamarin.KinveyException"/> class.
+		/// </summary>
+		/// <param name="errorCategory">The <see cref="KinveyXamarin.EnumErrorCategory"/>  of the exception.</param>
+		/// <param name="errorCode">The <see cref="KinveyXamarin.EnumErrorCode"/>  of the exception.</param>
+		/// <param name="info">Additional information about the exception, if available.</param>
+		/// <param name="innerException">[optional] Inner exception thrown, if available.</param>
+		public KinveyException(EnumErrorCategory errorCategory, EnumErrorCode errorCode, string info, Exception innerException = null)
+			: base(MessageFromErrorCode(errorCategory, errorCode), innerException)
+		{
 			this.errorCategory = errorCategory;
 			this.errorCode = errorCode;
             this.info = info;
