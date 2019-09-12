@@ -563,16 +563,21 @@ namespace Kinvey
             {
                 return default(T);
             }
+
+            string result = null;
             try
             {
                 var task = response.Content.ReadAsStringAsync();
                 task.Wait();
-                return JsonConvert.DeserializeObject<T>(task.Result);
+                result = task.Result;
+                return JsonConvert.DeserializeObject<T>(result);
             }
 			catch(JsonException ex){
-                throw new KinveyException(EnumErrorCategory.ERROR_DATASTORE_NETWORK,
+                throw new KinveyException($"Received a {result?.GetType()} for API call {response.RequestMessage.RequestUri}, but expected an {typeof(T)}",
+                                          EnumErrorCategory.ERROR_DATASTORE_NETWORK,
                                           EnumErrorCode.ERROR_JSON_PARSE,
-                                          $"For API call {response.RequestMessage.RequestUri} expected an {typeof(T)}" + Environment.NewLine + ex.Message)
+                                          ex.Message,
+                                          ex)
                                           {
                                               RequestID = HelperMethods.getRequestID(response)
                                           };
@@ -681,9 +686,10 @@ namespace Kinvey
                 }
 			}
 
-			try
+            string json = null;
+            try
 			{
-                var json = await response.Content.ReadAsStringAsync();
+                json = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<T>(json);
 
                 RequestStartTime = HelperMethods.GetRequestStartTime(response);
@@ -692,9 +698,10 @@ namespace Kinvey
 			}
             catch(JsonException ex)
             {
-                var kinveyException = new KinveyException(EnumErrorCategory.ERROR_DATASTORE_NETWORK,
+                var kinveyException = new KinveyException($"Received a {json?.GetType()} for API call {response.RequestMessage.RequestUri}, but expected an {typeof(T)}",
+                                                          EnumErrorCategory.ERROR_DATASTORE_NETWORK,
                                                           EnumErrorCode.ERROR_JSON_PARSE,
-                                                          $"For API call {response.RequestMessage.RequestUri} expected an {typeof(T)}" + Environment.NewLine + ex.Message,
+                                                          ex.Message,
                                                           ex)
                                                           {
                                                               RequestID = HelperMethods.getRequestID(response)
