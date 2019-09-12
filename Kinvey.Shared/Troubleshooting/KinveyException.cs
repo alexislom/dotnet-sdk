@@ -21,80 +21,45 @@ namespace Kinvey
 	/// </summary>
     public class KinveyException : Exception 
     {
-		#region Class Variables and Properties
-
-		private EnumErrorCategory errorCategory;
-
-		private EnumErrorCode errorCode;
-
-		private string error;
-
-		private string description;
-
-		private string debug;
-
-		private string requestID;
-
-        private string info;
+        #region Class Variables and Properties
 
         /// <summary>
         /// Gets the error category.
         /// </summary>
-        /// <value>The <see cref="KinveyXamarin.EnumErrorCategory"/>  enumeration for this exception.</value>
-        public EnumErrorCategory ErrorCategory
-		{
-			get { return this.errorCategory; }
-		}
+        /// <value>The <see cref="Kinvey.EnumErrorCategory"/>  enumeration for this exception.</value>
+        public EnumErrorCategory ErrorCategory { get; }
 
-		/// <summary>
-		/// Gets the error code.
-		/// </summary>
-		/// <value>The <see cref="KinveyXamarin.EnumErrorCode"/> enumeration for this exception.</value>
-		public EnumErrorCode ErrorCode
-		{
-			get { return this.errorCode; }
-		}
-
-		/// <summary>
-		/// Gets or sets the error.
-		/// </summary>
-		/// <value>The error of this exception.</value>
-		public string Error
-		{
-			get { return error; }
-			set { this.error = value; }
-		}
-
-		/// <summary>
-		/// Gets or sets the description.
-		/// </summary>
-		/// <value>The description of this exception.</value>
-		public string Description
-		{
-			get { return description; }
-			set { this.description = value; }
-		}
-
-		/// <summary>
-		/// Gets or sets the debug string.
-		/// </summary>
-		/// <value>The debug string for this exception, to help with resolution.</value>
-		public string Debug
-		{
-			get { return debug; }
-			set { this.debug = value; }
-		}
-
+        /// <summary>
+        /// Gets the error code.
+        /// </summary>
+        /// <value>The <see cref="Kinvey.EnumErrorCode"/> enumeration for this exception.</value>
+        public EnumErrorCode ErrorCode { get; }
 
         /// <summary>
         /// Gets or sets the info string.
         /// </summary>
         /// <value>The info string is additional information about the exception.</value>
-        public string Info
-        {
-            get { return info; }
-            set { this.info = value; }
-        }
+        public string Info { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error.
+        /// </summary>
+        /// <value>The error of this exception.</value>
+        public string Error { get; set; }
+
+        /// <summary>
+        /// Gets or sets the debug string.
+        /// </summary>
+        /// <value>The debug string for this exception, to help with resolution.</value>
+        public string Debug { get; set; }
+
+        /// <summary>
+        /// Gets or sets the description.
+        /// </summary>
+        /// <value>The description of this exception.</value>
+        public string Description { get; set; }
+
+        private string requestId;
 
         /// <summary>
         /// Gets or sets the request ID associated with this exception.
@@ -103,58 +68,59 @@ namespace Kinvey
         /// </summary>
         /// <value>The request ID associated with this exception.</value>
         public string RequestID
-		{
-			get { return this.requestID == null ? String.Empty : this.requestID; }
-			set { this.requestID = value; }
-		}
+        {
+            get { return requestId ?? string.Empty; }
+            set { requestId = value; }
+        }
 
-		/// <summary>
-		/// Gets or sets the status code for this error.
-		/// </summary>
-		/// <value>The status code.</value>
-		public int StatusCode { get; set; }
+        /// <summary>
+        /// Gets or sets the status code for this error.
+        /// </summary>
+        /// <value>The status code.</value>
+        public int StatusCode { get; set; }
 
 		#endregion
 
 		#region Constructors
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="KinveyXamarin.KinveyException"/> class.
+		/// Initializes a new instance of the <see cref="Kinvey.KinveyException"/> class.
 		/// </summary>
-		/// <param name="errorCategory">The <see cref="KinveyXamarin.EnumErrorCategory"/>  of the exception.</param>
-		/// <param name="errorCode">The <see cref="KinveyXamarin.EnumErrorCode"/>  of the exception.</param>
+		/// <param name="errorCategory">The <see cref="Kinvey.EnumErrorCategory"/>  of the exception.</param>
+		/// <param name="errorCode">The <see cref="Kinvey.EnumErrorCode"/>  of the exception.</param>
 		/// <param name="info">Additional information about the exception, if available.</param>
 		/// <param name="innerException">[optional] Inner exception thrown, if available.</param>
 		public KinveyException(EnumErrorCategory errorCategory, EnumErrorCode errorCode, string info, Exception innerException = null)
-			: base(MessageFromErrorCode(errorCategory, errorCode), innerException)
+			: base(MessageFromErrorCode(errorCode), innerException)
 		{
-			this.errorCategory = errorCategory;
-			this.errorCode = errorCode;
-            this.info = info;
+			ErrorCategory = errorCategory;
+			ErrorCode = errorCode;
+            Info = info;
 
-			Tuple<string, string, string> errorInfo = InfoFromErrorCode(errorCategory, errorCode);
-			this.error = errorInfo.Item1;
-			this.debug = errorInfo.Item2;
-			this.description = errorInfo.Item3;
+			Tuple<string, string, string> errorInfo = InfoFromErrorCode(errorCode);
+			Error = errorInfo.Item1;
+			Debug = errorInfo.Item2;
+			Description = errorInfo.Item3;
 		}
 
         public KinveyException(EnumErrorCategory errorCategory, EnumErrorCode errorCode, HttpResponseMessage response, Exception innerException)
             : base(innerException.Message, innerException)
 		{
-			this.errorCategory = errorCategory;
-			this.errorCode = errorCode;
+			ErrorCategory = errorCategory;
+			ErrorCode = errorCode;
+            Info = string.Empty;
 
-			Tuple<string, string, string> errorInfo = InfoFromErrorCode(errorCategory, errorCode);
+			Tuple<string, string, string> errorInfo = InfoFromErrorCode(errorCode);
 
-			StatusCode = (int) response.StatusCode;
+            StatusCode = (int)response.StatusCode;
 
 			try
 			{
-				KinveyJsonError errorJSON = KinveyJsonError.parse(response);
-				this.error = errorJSON.Error ?? errorInfo.Item1;
-				this.debug = errorJSON.Debug ?? errorInfo.Item2;
-				this.description = errorJSON.Description ?? errorInfo.Item3;
-				this.requestID = HelperMethods.getRequestID(response);
+				var errorJSON = KinveyJsonError.parse(response);
+				Error = errorJSON.Error ?? errorInfo.Item1;
+				Debug = errorJSON.Debug ?? errorInfo.Item2;
+				Description = errorJSON.Description ?? errorInfo.Item3;
+				requestId = HelperMethods.getRequestID(response);
 
 			}
 			catch (Exception) { 
@@ -162,21 +128,42 @@ namespace Kinvey
 			}
 		}
 
-		#endregion
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Kinvey.KinveyException"/> class.
+        /// </summary>
+        /// <param name="errorCategory">The <see cref="Kinvey.EnumErrorCategory"/>  of the exception.</param>
+        /// <param name="errorCode">The <see cref="Kinvey.EnumErrorCode"/>  of the exception.</param>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="innerException">[optional] Inner exception thrown, if available.</param>
+        /// <param name="additionalInfo">[optional] Additional information about the exception, if available.</param>
+        public KinveyException(string message, EnumErrorCategory errorCategory, EnumErrorCode errorCode, string additionalInfo = "", Exception innerException = null)
+            : base(message, innerException)
+        {
+            ErrorCategory = errorCategory;
+            ErrorCode = errorCode;
+            Info = additionalInfo;
+
+            Tuple<string, string, string> errorInfo = InfoFromErrorCode(errorCode);
+            Error = errorInfo.Item1;
+            Debug = errorInfo.Item2;
+            Description = errorInfo.Item3;
+        }
+
+        #endregion
 
 		#region Message Formatters
 
-		private static string MessageFromErrorCode(EnumErrorCategory category, EnumErrorCode code)
+		private static string MessageFromErrorCode(EnumErrorCode code)
 		{
-			Tuple<string, string, string> errorInfo = InfoFromErrorCode(category, code);
+			Tuple<string, string, string> errorInfo = InfoFromErrorCode(code);
 			return errorInfo.Item1 + errorInfo.Item2 + errorInfo.Item3;
 		}
 
-		private static Tuple<string, string, string> InfoFromErrorCode(EnumErrorCategory category, EnumErrorCode code)
+		private static Tuple<string, string, string> InfoFromErrorCode(EnumErrorCode code)
 		{
-			string error = "";
-			string debug = "";
-			string description = "";
+			string error;
+			string debug;
+			string description;
 
 			switch (code)
 			{
@@ -184,13 +171,19 @@ namespace Kinvey
 					error = "";
 					debug = "";
 					description = "";
-				break;
+				    break;
 
 				case EnumErrorCode.ERROR_JSON_PARSE:
 					error = "Unable to parse the json in the repsonse";
 					debug = "examine BL or DLC to ensure data format is correct.";
 					description = "If the exception is caused by `Path <somekey>`, then <somekey> might be a different type than is expected (int instead of of string)";
-				break;
+				    break;
+
+                case EnumErrorCode.ERROR_JSON_RESPONSE:
+                    error = "";
+                    debug = "";
+                    description = "";
+                    break;
 
 				case EnumErrorCode.ERROR_MIC_HOSTNAME_REQUIREMENT_HTTPS:
 					error = "MIC Hostname must use the https protocol, trying to set: ";
