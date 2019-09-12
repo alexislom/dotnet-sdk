@@ -254,13 +254,13 @@ namespace Kinvey
 		public async Task<KinveyAuthResponse> ExecuteAsync()
         {
             HttpResponseMessage response = null;
-            string responseBody = null;
-
+            JToken jsonToken = null;
             try
 			{
                 response = await ExecuteUnparsedAsync();
-                responseBody = await response.Content.ReadAsStringAsync();
-				return JsonConvert.DeserializeObject<KinveyAuthResponse>(responseBody);
+                var responseBody = await response.Content.ReadAsStringAsync();
+                jsonToken = JToken.Parse(responseBody);
+                return JsonConvert.DeserializeObject<KinveyAuthResponse>(responseBody);
 			}
 			catch (KinveyException)
 			{
@@ -268,7 +268,7 @@ namespace Kinvey
 			}
 			catch (Exception ex)
 			{
-				throw new KinveyException($"Received a {responseBody?.GetType()} for API call {response?.RequestMessage.RequestUri}, but expected an KinveyAuthResponse",
+				throw new KinveyException($"Received a {jsonToken?.Type} for API call {response?.RequestMessage.RequestUri}, but expected an KinveyAuthResponse",
                                           EnumErrorCategory.ERROR_USER,
                                           EnumErrorCode.ERROR_USER_LOGIN_ATTEMPT,
                                           "Error deserializing response content.",

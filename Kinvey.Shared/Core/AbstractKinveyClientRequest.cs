@@ -564,16 +564,16 @@ namespace Kinvey
                 return default(T);
             }
 
-            string result = null;
+            JToken jsonToken = null;
             try
             {
                 var task = response.Content.ReadAsStringAsync();
                 task.Wait();
-                result = task.Result;
-                return JsonConvert.DeserializeObject<T>(result);
+                jsonToken = JToken.Parse(task.Result);
+                return JsonConvert.DeserializeObject<T>(task.Result);
             }
 			catch(JsonException ex){
-                throw new KinveyException($"Received a {result?.GetType()} for API call {response.RequestMessage.RequestUri}, but expected an {typeof(T)}",
+                throw new KinveyException($"Received a {jsonToken?.Type} for API call {response.RequestMessage.RequestUri}, but expected an {typeof(T)}",
                                           EnumErrorCategory.ERROR_DATASTORE_NETWORK,
                                           EnumErrorCode.ERROR_JSON_PARSE,
                                           ex.Message,
@@ -686,10 +686,11 @@ namespace Kinvey
                 }
 			}
 
-            string json = null;
+            JToken jsonToken = null;
             try
 			{
-                json = await response.Content.ReadAsStringAsync();
+                var json = await response.Content.ReadAsStringAsync();
+                jsonToken = JToken.Parse(json);
                 var result = JsonConvert.DeserializeObject<T>(json);
 
                 RequestStartTime = HelperMethods.GetRequestStartTime(response);
@@ -698,7 +699,7 @@ namespace Kinvey
 			}
             catch(JsonException ex)
             {
-                var kinveyException = new KinveyException($"Received a {json?.GetType()} for API call {response.RequestMessage.RequestUri}, but expected an {typeof(T)}",
+                var kinveyException = new KinveyException($"Received a {jsonToken?.Type} for API call {response.RequestMessage.RequestUri}, but expected an {typeof(T)}",
                                                           EnumErrorCategory.ERROR_DATASTORE_NETWORK,
                                                           EnumErrorCode.ERROR_JSON_PARSE,
                                                           ex.Message,
