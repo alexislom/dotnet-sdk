@@ -573,7 +573,7 @@ namespace Kinvey
                 return JsonConvert.DeserializeObject<T>(task.Result);
             }
 			catch(JsonException ex){
-                throw new KinveyException($"Received a {jsonToken?.Type} for API call {response.RequestMessage.RequestUri}, but expected an {typeof(T)}",
+                throw new KinveyException($"Received {jsonToken?.Type} for API call {response.RequestMessage.RequestUri}, but expected {typeof(T)}",
                                           EnumErrorCategory.ERROR_DATASTORE_NETWORK,
                                           EnumErrorCode.ERROR_JSON_PARSE,
                                           ex.Message,
@@ -699,7 +699,7 @@ namespace Kinvey
 			}
             catch(JsonException ex)
             {
-                var kinveyException = new KinveyException($"Received a {jsonToken?.Type} for API call {response.RequestMessage.RequestUri}, but expected an {typeof(T)}",
+                var kinveyException = new KinveyException($"Received {jsonToken?.Type} for API call {response.RequestMessage.RequestUri}, but expected {typeof(T)}",
                                                           EnumErrorCategory.ERROR_DATASTORE_NETWORK,
                                                           EnumErrorCode.ERROR_JSON_PARSE,
                                                           ex.Message,
