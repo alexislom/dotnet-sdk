@@ -111,9 +111,50 @@ namespace Kinvey.Tests
             // Assert
             Assert.IsNotNull(actualResult);
             Assert.IsNotNull(actualResult.Message);
-            Assert.That.StringEquals($"Received Array for API call {fakeHttpResponseMessage?.RequestMessage?.RequestUri}, but expected an KinveyAuthResponse", actualResult.Message);
+            Assert.That.StringEquals($"Received Array for API call {fakeHttpResponseMessage?.RequestMessage?.RequestUri}, but expected KinveyAuthResponse", actualResult.Message);
             Assert.AreEqual(EnumErrorCategory.ERROR_USER, actualResult.ErrorCategory);
             Assert.AreEqual(EnumErrorCode.ERROR_USER_LOGIN_ATTEMPT, actualResult.ErrorCode);
+        }
+
+        [TestMethod]
+        public async Task TestErrorJsonResponseInUserExistenceRequest()
+        {
+            // Arrange
+            var mockHttpClientHandler = new Mock<HttpClientHandler>();
+            var fakeHttpResponseMessage = new HttpResponseMessage();
+            var fakeHttpClient = new HttpClient(mockHttpClientHandler.Object);
+
+            var serializedObject = JsonConvert.SerializeObject(new[] { 1, 2, 3, 4, 5 });
+            var stringContent = new StringContent(serializedObject);
+
+            fakeHttpResponseMessage.Content = stringContent;
+            fakeHttpResponseMessage.RequestMessage = new HttpRequestMessage { RequestUri = new Uri("http://localhost:8080") };
+
+            mockHttpClientHandler.Protected()
+                                 .Setup<Task<HttpResponseMessage>>("SendAsync",
+                                                                   ItExpr.IsAny<HttpRequestMessage>(),
+                                                                   ItExpr.IsAny<CancellationToken>())
+                                 .ReturnsAsync(fakeHttpResponseMessage);
+
+            // Act
+            var builder = new Client.Builder(TestSetup.app_key, TestSetup.app_secret)
+                                    .SetRestClient(fakeHttpClient);
+
+            var client = builder.Build();
+
+            var existenceRequest = client.UserFactory.BuildUserExistenceRequest(TestSetup.user);
+
+            // Act
+            var actualResult = Assert.ThrowsException<KinveyException>(() => existenceRequest.Execute());
+
+            // Assert
+            TestErrorJsonResponseInUserExistenceRequestAssert(actualResult, fakeHttpResponseMessage);
+
+            // Act
+            var actualAsyncResult = await Assert.ThrowsExceptionAsync<KinveyException>(async () => await existenceRequest.ExecuteAsync());
+
+            // Assert
+            TestErrorJsonResponseInUserExistenceRequestAssert(actualAsyncResult, fakeHttpResponseMessage);
         }
 
         [TestMethod]
@@ -172,5 +213,18 @@ namespace Kinvey.Tests
             Assert.IsFalse(urlToTestForScopeID.Equals(string.Empty));
             Assert.IsTrue(urlToTestForScopeID.Contains("scope=openid"));
         }
+
+        #region Assert methods
+
+        private static void TestErrorJsonResponseInUserExistenceRequestAssert(KinveyException kinveyException, HttpResponseMessage httpResponseMessage)
+        {
+            Assert.IsNotNull(kinveyException);
+            Assert.IsNotNull(kinveyException.Message);
+            Assert.That.StringEquals($"Received Array for API call {httpResponseMessage?.RequestMessage?.RequestUri}, but expected Newtonsoft.Json.Linq.JObject", kinveyException.Message);
+            Assert.AreEqual(EnumErrorCategory.ERROR_DATASTORE_NETWORK, kinveyException.ErrorCategory);
+            Assert.AreEqual(EnumErrorCode.ERROR_JSON_PARSE, kinveyException.ErrorCode);
+        }
+
+        #endregion Assert methods
     }
 }
