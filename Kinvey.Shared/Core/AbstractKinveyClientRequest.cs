@@ -572,16 +572,6 @@ namespace Kinvey
                 jsonToken = JToken.Parse(task.Result);
                 return JsonConvert.DeserializeObject<T>(task.Result);
             }
-			catch(JsonException ex){
-                throw new KinveyException($"Received {jsonToken?.Type} for API call {response.RequestMessage.RequestUri}, but expected {typeof(T)}",
-                                          EnumErrorCategory.ERROR_DATASTORE_NETWORK,
-                                          EnumErrorCode.ERROR_JSON_PARSE,
-                                          ex.Message,
-                                          ex)
-                                          {
-                                              RequestID = HelperMethods.getRequestID(response)
-                                          };
-			}
             catch(ArgumentException ex)
             {
 				Logger.Log (ex.Message);  
@@ -592,7 +582,17 @@ namespace Kinvey
 				Logger.Log (ex.Message);
                 return default(T);
             }
-
+            catch (Exception ex)
+            {
+                throw new KinveyException($"Received {jsonToken?.Type} for API call {response.RequestMessage.RequestUri}, but expected {typeof(T)}",
+                                          EnumErrorCategory.ERROR_DATASTORE_NETWORK,
+                                          EnumErrorCode.ERROR_JSON_PARSE,
+                                          ex.Message,
+                                          ex)
+                                          {
+                                              RequestID = HelperMethods.getRequestID(response)
+                                          };
+            }
         }
 
 		public virtual async Task<T> ExecuteAsync(){
