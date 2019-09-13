@@ -268,7 +268,7 @@ namespace Kinvey
 			}
 			catch (Exception ex)
 			{
-				throw new KinveyException($"Received a {jsonToken?.Type} for API call {response?.RequestMessage.RequestUri}, but expected an KinveyAuthResponse",
+				throw new KinveyException($"Received a {jsonToken?.Type} for API call {response?.RequestMessage?.RequestUri}, but expected an KinveyAuthResponse",
                                           EnumErrorCategory.ERROR_USER,
                                           EnumErrorCode.ERROR_USER_LOGIN_ATTEMPT,
                                           "Error deserializing response content.",
