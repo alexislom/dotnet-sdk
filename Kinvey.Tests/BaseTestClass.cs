@@ -274,6 +274,10 @@ namespace Kinvey.Tests
 
                     Write(context, clone);
                 }
+                else if (username.ToString() == TestSetup.test_json_user && password.ToString() == TestSetup.test_json_pass)
+                {
+                    Write(context, new[]{1, 2, 3, 4, 5});
+                }
                 else
                 {
                     context.Response.StatusCode = 401;
@@ -1865,6 +1869,12 @@ namespace Kinvey.Tests
         {
             var json = Read<JObject>(context);
             var username = json["username"];
+
+            if (username.ToString() == TestSetup.test_json_user)
+            {
+                Write(context, new[] { 1, 2, 3, 4, 5 });
+            }
+
             var user = users.SingleOrDefault(x => username.Equals(x["username"]));
             Write(context, new
             {
