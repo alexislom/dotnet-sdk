@@ -262,13 +262,13 @@ namespace Kinvey
                 jsonToken = JToken.Parse(responseBody);
                 return JsonConvert.DeserializeObject<KinveyAuthResponse>(responseBody);
 			}
-			catch (KinveyException)
-			{
-				throw;
-			}
 			catch (Exception ex)
 			{
-				throw new KinveyException($"Received {jsonToken?.Type} for API call {response?.RequestMessage?.RequestUri}, but expected KinveyAuthResponse",
+                if (ex is KinveyException)
+                {
+                    throw;
+                }
+                throw new KinveyException($"Received {jsonToken?.Type} for API call {response?.RequestMessage?.RequestUri}, but expected KinveyAuthResponse",
                                           EnumErrorCategory.ERROR_USER,
                                           EnumErrorCode.ERROR_USER_LOGIN_ATTEMPT,
                                           "Error deserializing response content.",
