@@ -1214,5 +1214,70 @@ namespace Kinvey.Tests
             // Assert
             Assert.IsFalse(user.Active);
         }
+
+        [TestMethod]
+        public async Task TestErrorJsonResponseWhileLogin()
+        {
+            // Arrange
+            MockResponses(1);
+
+            // Act
+            var actualResult = await Assert.ThrowsExceptionAsync<KinveyException>(async () => await User.LoginAsync(TestSetup.test_json_user, TestSetup.test_json_pass));
+
+            // Assert
+            Assert.IsNotNull(actualResult);
+            Assert.IsNotNull(actualResult.Message);
+            Assert.AreEqual($"Received Array for API call http://localhost:8080/user/_kid_/login, but expected KinveyAuthResponse", actualResult.Message);
+            Assert.AreEqual(EnumErrorCategory.ERROR_USER, actualResult.ErrorCategory);
+            Assert.AreEqual(EnumErrorCode.ERROR_USER_LOGIN_ATTEMPT, actualResult.ErrorCode);
+        }
+
+        [TestMethod]
+        public void TestErrorJsonResponseInUserExistenceSyncRequest()
+        {
+            // Arrange
+            MockResponses(1);
+
+            var client = new Client.Builder(TestSetup.mock_app_key, TestSetup.mock_app_secret)
+                                    .setBaseURL("http://localhost:8080")
+                                    .Build();
+
+            var existenceRequest = client.UserFactory.BuildUserExistenceRequest(TestSetup.test_json_user);
+
+            // Act
+            var actualSyncResult = Assert.ThrowsException<KinveyException>(() => existenceRequest.Execute());
+
+            // Assert
+
+            Assert.IsNotNull(actualSyncResult);
+            Assert.IsNotNull(actualSyncResult.Message);
+            Assert.AreEqual($"Received Array for API call http://localhost:8080/rpc/_kid_/check-username-exists, but expected Newtonsoft.Json.Linq.JObject", actualSyncResult.Message);
+            Assert.AreEqual(EnumErrorCategory.ERROR_DATASTORE_NETWORK, actualSyncResult.ErrorCategory);
+            Assert.AreEqual(EnumErrorCode.ERROR_JSON_PARSE, actualSyncResult.ErrorCode);
+        }
+
+        [TestMethod]
+        public async Task TestErrorJsonResponseInUserExistenceAsyncRequest()
+        {
+            // Arrange
+            MockResponses(1);
+
+            var client = new Client.Builder(TestSetup.mock_app_key, TestSetup.mock_app_secret)
+                                    .setBaseURL("http://localhost:8080")
+                                    .Build();
+
+            var existenceRequest = client.UserFactory.BuildUserExistenceRequest(TestSetup.test_json_user);
+
+            // Act
+            var actualAsyncResult = await Assert.ThrowsExceptionAsync<KinveyException>(async () => await existenceRequest.ExecuteAsync());
+
+            // Assert
+
+            Assert.IsNotNull(actualAsyncResult);
+            Assert.IsNotNull(actualAsyncResult.Message);
+            Assert.AreEqual($"Received Array for API call http://localhost:8080/rpc/_kid_/check-username-exists, but expected Newtonsoft.Json.Linq.JObject", actualAsyncResult.Message);
+            Assert.AreEqual(EnumErrorCategory.ERROR_DATASTORE_NETWORK, actualAsyncResult.ErrorCategory);
+            Assert.AreEqual(EnumErrorCode.ERROR_JSON_PARSE, actualAsyncResult.ErrorCode);
+        }
     }
 }
