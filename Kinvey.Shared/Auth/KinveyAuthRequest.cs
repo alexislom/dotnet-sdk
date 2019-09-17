@@ -256,25 +256,42 @@ namespace Kinvey
             HttpResponseMessage response = null;
             JToken jsonToken = null;
             try
-			{
+            {
                 response = await ExecuteUnparsedAsync();
                 var responseBody = await response.Content.ReadAsStringAsync();
                 jsonToken = JToken.Parse(responseBody);
                 return JsonConvert.DeserializeObject<KinveyAuthResponse>(responseBody);
-			}
-			catch (Exception ex)
-			{
-                if (ex is KinveyException)
-                {
-                    throw;
-                }
+            }
+            catch (KinveyException)
+            {
+                throw;
+            }
+            catch (JsonException ex)
+            {
                 throw new KinveyException($"Received {jsonToken?.Type} for API call {response?.RequestMessage?.RequestUri}, but expected KinveyAuthResponse",
                                           EnumErrorCategory.ERROR_USER,
                                           EnumErrorCode.ERROR_USER_LOGIN_ATTEMPT,
                                           "Error deserializing response content.",
                                           ex);
-			}
-		}
+            }
+            catch (InvalidCastException ex)
+            {
+                throw new KinveyException($"Received {jsonToken?.Type} for API call {response?.RequestMessage?.RequestUri}, but expected KinveyAuthResponse",
+                                          EnumErrorCategory.ERROR_USER,
+                                          EnumErrorCode.ERROR_USER_LOGIN_ATTEMPT,
+                                          "Error deserializing response content.",
+                                          ex);
+            }
+            catch (Exception ex)
+            {
+                throw new KinveyException(
+                    EnumErrorCategory.ERROR_USER,
+                    EnumErrorCode.ERROR_USER_LOGIN_ATTEMPT,
+                    "Error deserializing response content.",
+                    ex
+                );
+            }
+        }
 
 		/// <summary>
 		/// Builder for an auth request.

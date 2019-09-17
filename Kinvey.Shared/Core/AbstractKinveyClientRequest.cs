@@ -572,13 +572,8 @@ namespace Kinvey
                 jsonToken = JToken.Parse(task.Result);
                 return JsonConvert.DeserializeObject<T>(task.Result);
             }
-            catch (Exception ex)
+            catch (JsonException ex)
             {
-                if (ex is ArgumentException || ex is NullReferenceException)
-                {
-                    Logger.Log(ex.Message);
-                    return default;
-                }
                 throw new KinveyException($"Received {jsonToken?.Type} for API call {response.RequestMessage.RequestUri}, but expected {typeof(T)}",
                                           EnumErrorCategory.ERROR_DATASTORE_NETWORK,
                                           EnumErrorCode.ERROR_JSON_PARSE,
@@ -587,6 +582,27 @@ namespace Kinvey
                                           {
                                               RequestID = HelperMethods.getRequestID(response)
                                           };
+            }
+            catch (InvalidCastException ex)
+            {
+                throw new KinveyException($"Received {jsonToken?.Type} for API call {response.RequestMessage.RequestUri}, but expected {typeof(T)}",
+                                          EnumErrorCategory.ERROR_DATASTORE_NETWORK,
+                                          EnumErrorCode.ERROR_JSON_PARSE,
+                                          ex.Message,
+                                          ex)
+                                          {
+                                              RequestID = HelperMethods.getRequestID(response)
+                                          };
+            }
+            catch (ArgumentException ex)
+            {
+                Logger.Log(ex.Message);
+                return default(T);
+            }
+            catch (NullReferenceException ex)
+            {
+                Logger.Log(ex.Message);
+                return default(T);
             }
         }
 
@@ -692,13 +708,8 @@ namespace Kinvey
 
                 return result;
 			}
-            catch (Exception ex)
+            catch (JsonException ex)
             {
-                if (ex is ArgumentException || ex is NullReferenceException)
-                {
-                    Logger.Log(ex.Message);
-                    return default;
-                }
                 throw new KinveyException($"Received {jsonToken?.Type} for API call {response.RequestMessage.RequestUri}, but expected {typeof(T)}",
                                           EnumErrorCategory.ERROR_DATASTORE_NETWORK,
                                           EnumErrorCode.ERROR_JSON_PARSE,
@@ -707,6 +718,27 @@ namespace Kinvey
                                           {
                                               RequestID = HelperMethods.getRequestID(response)
                                           };
+            }
+            catch (InvalidCastException ex)
+            {
+                throw new KinveyException($"Received {jsonToken?.Type} for API call {response.RequestMessage.RequestUri}, but expected {typeof(T)}",
+                                          EnumErrorCategory.ERROR_DATASTORE_NETWORK,
+                                          EnumErrorCode.ERROR_JSON_PARSE,
+                                          ex.Message,
+                                          ex)
+                                          {
+                                              RequestID = HelperMethods.getRequestID(response)
+                                          };
+            }
+            catch (ArgumentException ex)
+            {
+                Logger.Log(ex.Message);
+                return default(T);
+            }
+            catch (NullReferenceException ex)
+            {
+                Logger.Log(ex.Message);
+                return default(T);
             }
         }
 
