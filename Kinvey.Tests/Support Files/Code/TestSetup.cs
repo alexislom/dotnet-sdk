@@ -24,10 +24,7 @@ namespace Kinvey.Tests
         public const string app_key = "kid_Zy0JOYPKkZ";
 		public const string app_secret = "d83de70e64d540e49acd6cfce31415df";
 
-        public const string mock_app_key = "_kid_";
-		public const string mock_app_secret = "appSecret";
-
-		public const string app_key_fake = "abcdefg";
+        public const string app_key_fake = "abcdefg";
 		public const string app_secret_fake = "0123456789abcdef";
 
         public const string facebook_access_token_fake = "2422694a-37ed-4664-b290-55b5672e48a3";
