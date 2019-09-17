@@ -1235,12 +1235,14 @@ namespace Kinvey.Tests
         [TestMethod]
         public void TestErrorJsonResponseInUserExistenceSyncRequest()
         {
+            if (!MockData)
+                return;
+
             // Arrange
             MockResponses(1);
 
-            var client = new Client.Builder(TestSetup.mock_app_key, TestSetup.mock_app_secret)
-                                    .setBaseURL("http://localhost:8080")
-                                    .Build();
+            var client = ClientBuilder.setBaseURL("http://localhost:8080")
+                                      .Build();
 
             var existenceRequest = client.UserFactory.BuildUserExistenceRequest(TestSetup.test_json_user);
 
@@ -1259,23 +1261,48 @@ namespace Kinvey.Tests
         [TestMethod]
         public async Task TestErrorJsonResponseInUserExistenceAsyncRequest()
         {
+            if (!MockData)
+                return;
+
+            // Setup
+            kinveyClient = BuildClient();
+
+            MockResponses(4);
+
+            await User.LoginAsync(TestSetup.user, TestSetup.pass, kinveyClient);
+
+            var newItem = new ToDo
+            {
+                Name = "Next Task",
+                Details = "A test",
+                DueDate = "2016-04-19T20:02:17.635Z"
+            };
+            var anotherNewItem = new ToDo
+            {
+                Name = "Another Next Task",
+                Details = "Another test",
+                DueDate = "2016-05-19T20:02:17.635Z"
+            };
+
+            var todoStore = DataStore<ToDo>.Collection(toDosCollection, DataStoreType.NETWORK);
+
+            await todoStore.SaveAsync(newItem);
+
+            await todoStore.SaveAsync(anotherNewItem);
+
             // Arrange
-            MockResponses(1);
 
-            var client = new Client.Builder(TestSetup.mock_app_key, TestSetup.mock_app_secret)
-                                    .setBaseURL("http://localhost:8080")
-                                    .Build();
-
-            var existenceRequest = client.UserFactory.BuildUserExistenceRequest(TestSetup.test_json_user);
+            var buildGetRequest = kinveyClient.NetworkFactory.buildGetRequest<int>(toDosCollection);
 
             // Act
-            var actualAsyncResult = await Assert.ThrowsExceptionAsync<KinveyException>(async () => await existenceRequest.ExecuteAsync());
+
+            var actualAsyncResult = await Assert.ThrowsExceptionAsync<KinveyException>(async () => await buildGetRequest.ExecuteAsync());
 
             // Assert
 
             Assert.IsNotNull(actualAsyncResult);
             Assert.IsNotNull(actualAsyncResult.Message);
-            Assert.AreEqual($"Received Array for API call http://localhost:8080/rpc/_kid_/check-username-exists, but expected Newtonsoft.Json.Linq.JObject", actualAsyncResult.Message);
+            Assert.AreEqual($"Received Array for API call http://localhost:8080/appdata/_kid_/ToDos, but expected System.Collections.Generic.List`1[System.Int32]", actualAsyncResult.Message);
             Assert.AreEqual(EnumErrorCategory.ERROR_DATASTORE_NETWORK, actualAsyncResult.ErrorCategory);
             Assert.AreEqual(EnumErrorCode.ERROR_JSON_PARSE, actualAsyncResult.ErrorCode);
         }
