@@ -254,12 +254,12 @@ namespace Kinvey
 		public async Task<KinveyAuthResponse> ExecuteAsync()
         {
             HttpResponseMessage response = null;
+            string responseBody = null;
             JToken jsonToken = null;
             try
             {
                 response = await ExecuteUnparsedAsync();
-                var responseBody = await response.Content.ReadAsStringAsync();
-                jsonToken = JToken.Parse(responseBody);
+                responseBody = await response.Content.ReadAsStringAsync();
                 return JsonConvert.DeserializeObject<KinveyAuthResponse>(responseBody);
             }
             catch (KinveyException)
@@ -268,6 +268,7 @@ namespace Kinvey
             }
             catch (JsonException ex)
             {
+                jsonToken = JToken.Parse(responseBody);
                 throw new KinveyException($"Received {jsonToken?.Type} for API call {response?.RequestMessage?.RequestUri}, but expected KinveyAuthResponse",
                                           EnumErrorCategory.ERROR_USER,
                                           EnumErrorCode.ERROR_USER_LOGIN_ATTEMPT,
@@ -276,6 +277,7 @@ namespace Kinvey
             }
             catch (InvalidCastException ex)
             {
+                jsonToken = JToken.Parse(responseBody);
                 throw new KinveyException($"Received {jsonToken?.Type} for API call {response?.RequestMessage?.RequestUri}, but expected KinveyAuthResponse",
                                           EnumErrorCategory.ERROR_USER,
                                           EnumErrorCode.ERROR_USER_LOGIN_ATTEMPT,
