@@ -275,15 +275,6 @@ namespace Kinvey
                                           "Error deserializing response content.",
                                           ex);
             }
-            catch (InvalidCastException ex)
-            {
-                jsonToken = JToken.Parse(responseBody);
-                throw new KinveyException($"Received {jsonToken?.Type} for API call {response?.RequestMessage?.RequestUri}, but expected KinveyAuthResponse",
-                                          EnumErrorCategory.ERROR_USER,
-                                          EnumErrorCode.ERROR_USER_LOGIN_ATTEMPT,
-                                          "Error deserializing response content.",
-                                          ex);
-            }
             catch (Exception ex)
             {
                 throw new KinveyException(
