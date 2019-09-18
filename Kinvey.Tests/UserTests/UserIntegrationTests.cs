@@ -1218,6 +1218,9 @@ namespace Kinvey.Tests
         [TestMethod]
         public async Task TestErrorJsonResponseWhileLogin()
         {
+            if (!MockData)
+                return;
+
             // Arrange
             MockResponses(1);
 
@@ -1259,15 +1262,13 @@ namespace Kinvey.Tests
         }
 
         [TestMethod]
-        public async Task TestErrorJsonResponseInUserExistenceAsyncRequest()
+        public async Task TestThrowErrorJsonResponseExceptionInBuildGetAsyncRequest()
         {
-            if (!MockData)
-                return;
-
             // Setup
-            kinveyClient = BuildClient();
-
-            MockResponses(4);
+            if (MockData)
+            {
+                MockResponses(4);
+            }
 
             await User.LoginAsync(TestSetup.user, TestSetup.pass, kinveyClient);
 
@@ -1291,18 +1292,17 @@ namespace Kinvey.Tests
             await todoStore.SaveAsync(anotherNewItem);
 
             // Arrange
-
             var buildGetRequest = kinveyClient.NetworkFactory.buildGetRequest<int>(toDosCollection);
 
             // Act
-
             var actualAsyncResult = await Assert.ThrowsExceptionAsync<KinveyException>(async () => await buildGetRequest.ExecuteAsync());
 
             // Assert
-
             Assert.IsNotNull(actualAsyncResult);
             Assert.IsNotNull(actualAsyncResult.Message);
-            Assert.AreEqual($"Received Array for API call http://localhost:8080/appdata/_kid_/ToDos, but expected System.Collections.Generic.List`1[System.Int32]", actualAsyncResult.Message);
+            Assert.AreEqual(MockData ? "Received Array for API call http://localhost:8080/appdata/_kid_/ToDos, but expected System.Collections.Generic.List`1[System.Int32]"
+                                            : $"Received Array for API call https://baas.kinvey.com/appdata/{AppKey}/ToDos, but expected System.Collections.Generic.List`1[System.Int32]",
+                                            actualAsyncResult.Message);
             Assert.AreEqual(EnumErrorCategory.ERROR_DATASTORE_NETWORK, actualAsyncResult.ErrorCategory);
             Assert.AreEqual(EnumErrorCode.ERROR_JSON_PARSE, actualAsyncResult.ErrorCode);
         }
