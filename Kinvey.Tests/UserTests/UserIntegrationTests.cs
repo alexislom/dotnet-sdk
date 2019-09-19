@@ -1236,7 +1236,7 @@ namespace Kinvey.Tests
         }
 
         [TestMethod]
-        public void TestErrorJsonResponseInUserExistenceSyncRequest()
+        public void TestErrorJsonResponseInUserExistenceSyncRequestThrowInvalidCastException()
         {
             if (!MockData)
                 return;
@@ -1257,6 +1257,42 @@ namespace Kinvey.Tests
             Assert.IsNotNull(actualSyncResult);
             Assert.IsNotNull(actualSyncResult.Message);
             Assert.AreEqual($"Received Array for API call http://localhost:8080/rpc/_kid_/check-username-exists, but expected Newtonsoft.Json.Linq.JObject", actualSyncResult.Message);
+            Assert.AreEqual(EnumErrorCategory.ERROR_DATASTORE_NETWORK, actualSyncResult.ErrorCategory);
+            Assert.AreEqual(EnumErrorCode.ERROR_JSON_PARSE, actualSyncResult.ErrorCode);
+        }
+
+        [TestMethod]
+        public async Task TestErrorJsonResponseInDeleteSyncRequestThrowJsonException()
+        {
+            if (!MockData)
+                return;
+
+            // Arrange
+            MockResponses(3);
+
+            await User.LoginAsync(TestSetup.user, TestSetup.pass, kinveyClient);
+
+            var newItem = new ToDo
+            {
+                Name = "Next Task",
+                Details = "A test",
+                DueDate = "2016-04-19T20:02:17.635Z"
+            };
+
+            var todoStore = DataStore<ToDo>.Collection(toDosCollection, DataStoreType.NETWORK);
+
+            var savedItem = await todoStore.SaveAsync(newItem);
+
+            // Arrange
+            var deleteRequest = kinveyClient.NetworkFactory.buildDeleteRequest<int>(toDosCollection, savedItem.ID);
+
+            // Act
+            var actualSyncResult = Assert.ThrowsException<KinveyException>(() => deleteRequest.Execute());
+
+            // Assert
+            Assert.IsNotNull(actualSyncResult);
+            Assert.IsNotNull(actualSyncResult.Message);
+            Assert.AreEqual($"Received Object for API call http://localhost:8080/appdata/_kid_/ToDos/{savedItem.ID}, but expected System.Int32", actualSyncResult.Message);
             Assert.AreEqual(EnumErrorCategory.ERROR_DATASTORE_NETWORK, actualSyncResult.ErrorCategory);
             Assert.AreEqual(EnumErrorCode.ERROR_JSON_PARSE, actualSyncResult.ErrorCode);
         }
