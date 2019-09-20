@@ -22,6 +22,7 @@ using System.Net;
 using System.Threading;
 using System.Net.Http;
 using System.Diagnostics;
+using Newtonsoft.Json.Linq;
 
 namespace Kinvey.Tests
 {
@@ -423,6 +424,57 @@ namespace Kinvey.Tests
             });
         }
 
+        [TestMethod]
+        public async Task TestThrowJsonExceptionInBuildGetAsyncRequest()
+        {
+            // Setup
+            kinveyClient = BuildClient();
+
+            if (MockData)
+            {
+                MockResponses(6);
+            }
+
+            await User.LoginAsync(TestSetup.user, TestSetup.pass, kinveyClient);
+
+            var newItem = new ToDo
+            {
+                Name = "Next Task",
+                Details = "A test",
+                DueDate = "2016-04-19T20:02:17.635Z"
+            };
+            var anotherNewItem = new ToDo
+            {
+                Name = "Another Next Task",
+                Details = "Another test",
+                DueDate = "2016-05-19T20:02:17.635Z"
+            };
+
+            var todoStore = DataStore<ToDo>.Collection(toDosCollection, DataStoreType.NETWORK);
+
+            var savedItem = await todoStore.SaveAsync(newItem);
+
+            var savedAnotherItem = await todoStore.SaveAsync(anotherNewItem);
+
+            // Arrange
+            var buildGetRequest = kinveyClient.NetworkFactory.buildGetRequest<int>(toDosCollection);
+
+            // Act
+            var actualAsyncResult = await Assert.ThrowsExceptionAsync<KinveyException>(async () => await buildGetRequest.ExecuteAsync());
+
+            //Teardown
+            await todoStore.RemoveAsync(savedItem.ID);
+
+            await todoStore.RemoveAsync(savedAnotherItem.ID);
+
+            // Assert
+            Assert.IsNotNull(actualAsyncResult);
+            Assert.IsNotNull(actualAsyncResult.Message);
+            Assert.AreEqual($"Received Array for API call {kinveyClient.BaseUrl}appdata/{AppKey}/ToDos, but expected System.Collections.Generic.List`1[System.Int32]", actualAsyncResult.Message);
+            Assert.AreEqual(EnumErrorCategory.ERROR_DATASTORE_NETWORK, actualAsyncResult.ErrorCategory);
+            Assert.AreEqual(EnumErrorCode.ERROR_JSON_PARSE, actualAsyncResult.ErrorCode);
+        }
+
         #endregion Pull, Push, Sync
 
         #region Delete
@@ -659,6 +711,83 @@ namespace Kinvey.Tests
                 Assert.AreEqual(EnumErrorCode.ERROR_JSON_RESPONSE, kinveyException.ErrorCode);
                 Assert.AreEqual(500, kinveyException.StatusCode);
             }
+        }
+
+        [TestMethod]
+        public async Task TestErrorJsonResponseInDeleteSyncRequestThrowJsonException()
+        {
+            if (!MockData)
+                return;
+
+            // Setup
+            kinveyClient = BuildClient();
+
+            // Arrange
+            MockResponses(3);
+
+            await User.LoginAsync(TestSetup.user, TestSetup.pass, kinveyClient);
+
+            var newItem = new ToDo
+            {
+                Name = "Next Task",
+                Details = "A test",
+                DueDate = "2016-04-19T20:02:17.635Z"
+            };
+
+            var todoStore = DataStore<ToDo>.Collection(toDosCollection, DataStoreType.NETWORK);
+
+            var savedItem = await todoStore.SaveAsync(newItem);
+
+            // Arrange
+            var deleteRequest = kinveyClient.NetworkFactory.buildDeleteRequest<int>(toDosCollection, savedItem.ID);
+
+            // Act
+            var actualSyncResult = Assert.ThrowsException<KinveyException>(() => deleteRequest.Execute());
+
+            // Assert
+            Assert.IsNotNull(actualSyncResult);
+            Assert.IsNotNull(actualSyncResult.Message);
+            Assert.AreEqual($"Received Object for API call http://localhost:8080/appdata/_kid_/ToDos/{savedItem.ID}, but expected System.Int32", actualSyncResult.Message);
+            Assert.AreEqual(EnumErrorCategory.ERROR_DATASTORE_NETWORK, actualSyncResult.ErrorCategory);
+            Assert.AreEqual(EnumErrorCode.ERROR_JSON_PARSE, actualSyncResult.ErrorCode);
+        }
+
+        [TestMethod]
+        public async Task TestThrowInvalidCastExceptionInBuildDeleteRequest()
+        {
+            // Setup
+            kinveyClient = BuildClient();
+
+            if (MockData)
+            {
+                MockResponses(3);
+            }
+
+            await User.LoginAsync(TestSetup.user, TestSetup.pass, kinveyClient);
+
+            var newItem = new ToDo
+            {
+                Name = "Next Task",
+                Details = "A test",
+                DueDate = "2016-04-19T20:02:17.635Z"
+            };
+
+            var todoStore = DataStore<ToDo>.Collection(toDosCollection, DataStoreType.NETWORK);
+
+            var savedItem = await todoStore.SaveAsync(newItem);
+
+            // Arrange
+            var buildDeleteRequest = kinveyClient.NetworkFactory.buildDeleteRequest<JArray>(toDosCollection, savedItem.ID);
+
+            // Act
+            var actualAsyncResult = await Assert.ThrowsExceptionAsync<KinveyException>(async () => await buildDeleteRequest.ExecuteAsync());
+
+            // Assert
+            Assert.IsNotNull(actualAsyncResult);
+            Assert.IsNotNull(actualAsyncResult.Message);
+            Assert.AreEqual($"Received Object for API call {kinveyClient.BaseUrl}appdata/{AppKey}/ToDos/{savedItem.ID}, but expected Newtonsoft.Json.Linq.JArray", actualAsyncResult.Message);
+            Assert.AreEqual(EnumErrorCategory.ERROR_DATASTORE_NETWORK, actualAsyncResult.ErrorCategory);
+            Assert.AreEqual(EnumErrorCode.ERROR_JSON_PARSE, actualAsyncResult.ErrorCode);
         }
 
         #endregion Negative
