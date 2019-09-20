@@ -723,6 +723,18 @@ namespace Kinvey
                                               RequestID = HelperMethods.getRequestID(response)
                                           };
             }
+            catch (InvalidCastException ex)
+            {
+                jsonToken = JToken.Parse(json);
+                throw new KinveyException($"Received {jsonToken?.Type} for API call {response.RequestMessage.RequestUri}, but expected {typeof(T)}",
+                                          EnumErrorCategory.ERROR_DATASTORE_NETWORK,
+                                          EnumErrorCode.ERROR_JSON_PARSE,
+                                          ex.Message,
+                                          ex)
+                                          {
+                                              RequestID = HelperMethods.getRequestID(response)
+                                          };
+            }
             catch (ArgumentException ex)
             {
                 Logger.Log(ex.Message);
