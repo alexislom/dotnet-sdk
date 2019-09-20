@@ -268,7 +268,15 @@ namespace Kinvey
             }
             catch (JsonException ex)
             {
-                jsonToken = JToken.Parse(responseBody);
+                try
+                {
+                    jsonToken = JToken.Parse(responseBody);
+                }
+                catch
+                {
+                    // ignored
+                }
+
                 throw new KinveyException($"Received {jsonToken?.Type} for API call {response?.RequestMessage?.RequestUri}, but expected KinveyAuthResponse",
                                           EnumErrorCategory.ERROR_USER,
                                           EnumErrorCode.ERROR_USER_LOGIN_ATTEMPT,

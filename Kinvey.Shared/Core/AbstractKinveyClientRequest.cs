@@ -575,7 +575,15 @@ namespace Kinvey
             }
             catch (JsonException ex)
             {
-                jsonToken = JToken.Parse(result);
+                try
+                {
+                    jsonToken = JToken.Parse(result);
+                }
+                catch
+                {
+                    // ignored
+                }
+
                 throw new KinveyException($"Received {jsonToken?.Type} for API call {response.RequestMessage.RequestUri}, but expected {typeof(T)}",
                                           EnumErrorCategory.ERROR_DATASTORE_NETWORK,
                                           EnumErrorCode.ERROR_JSON_PARSE,
@@ -587,7 +595,15 @@ namespace Kinvey
             }
             catch (InvalidCastException ex)
             {
-                jsonToken = JToken.Parse(result);
+                try
+                {
+                    jsonToken = JToken.Parse(result);
+                }
+                catch
+                {
+                    // ignored
+                }
+
                 throw new KinveyException($"Received {jsonToken?.Type} for API call {response.RequestMessage.RequestUri}, but expected {typeof(T)}",
                                           EnumErrorCategory.ERROR_DATASTORE_NETWORK,
                                           EnumErrorCode.ERROR_JSON_PARSE,
@@ -713,7 +729,15 @@ namespace Kinvey
 			}
             catch (JsonException ex)
             {
-                jsonToken = JToken.Parse(json);
+                try
+                {
+                    jsonToken = JToken.Parse(json);
+                }
+                catch
+                {
+                    // ignored
+                }
+
                 throw new KinveyException($"Received {jsonToken?.Type} for API call {response.RequestMessage.RequestUri}, but expected {typeof(T)}",
                                           EnumErrorCategory.ERROR_DATASTORE_NETWORK,
                                           EnumErrorCode.ERROR_JSON_PARSE,
@@ -725,7 +749,15 @@ namespace Kinvey
             }
             catch (InvalidCastException ex)
             {
-                jsonToken = JToken.Parse(json);
+                try
+                {
+                    jsonToken = JToken.Parse(json);
+                }
+                catch
+                {
+                    // ignored
+                }
+
                 throw new KinveyException($"Received {jsonToken?.Type} for API call {response.RequestMessage.RequestUri}, but expected {typeof(T)}",
                                           EnumErrorCategory.ERROR_DATASTORE_NETWORK,
                                           EnumErrorCode.ERROR_JSON_PARSE,
