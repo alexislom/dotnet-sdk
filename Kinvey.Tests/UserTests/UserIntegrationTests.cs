@@ -1244,8 +1244,7 @@ namespace Kinvey.Tests
             // Arrange
             MockResponses(1);
 
-            var client = ClientBuilder.setBaseURL("http://localhost:8080")
-                                      .Build();
+            var client = BuildClient();
 
             var existenceRequest = client.UserFactory.BuildUserExistenceRequest(TestSetup.test_json_user);
 
@@ -1298,12 +1297,12 @@ namespace Kinvey.Tests
         }
 
         [TestMethod]
-        public async Task TestThrowErrorJsonResponseExceptionInBuildGetAsyncRequest()
+        public async Task TestThrowJsonExceptionInBuildGetAsyncRequest()
         {
             // Setup
             if (MockData)
             {
-                MockResponses(4);
+                MockResponses(6);
             }
 
             await User.LoginAsync(TestSetup.user, TestSetup.pass, kinveyClient);
@@ -1323,9 +1322,9 @@ namespace Kinvey.Tests
 
             var todoStore = DataStore<ToDo>.Collection(toDosCollection, DataStoreType.NETWORK);
 
-            await todoStore.SaveAsync(newItem);
+            var savedItem = await todoStore.SaveAsync(newItem);
 
-            await todoStore.SaveAsync(anotherNewItem);
+            var savedAnotherItem = await todoStore.SaveAsync(anotherNewItem);
 
             // Arrange
             var buildGetRequest = kinveyClient.NetworkFactory.buildGetRequest<int>(toDosCollection);
@@ -1333,12 +1332,51 @@ namespace Kinvey.Tests
             // Act
             var actualAsyncResult = await Assert.ThrowsExceptionAsync<KinveyException>(async () => await buildGetRequest.ExecuteAsync());
 
+            //Teardown
+            await todoStore.RemoveAsync(savedItem.ID);
+
+            await todoStore.RemoveAsync(savedAnotherItem.ID);
+
             // Assert
             Assert.IsNotNull(actualAsyncResult);
             Assert.IsNotNull(actualAsyncResult.Message);
-            Assert.AreEqual(MockData ? "Received Array for API call http://localhost:8080/appdata/_kid_/ToDos, but expected System.Collections.Generic.List`1[System.Int32]"
-                                            : $"Received Array for API call https://baas.kinvey.com/appdata/{AppKey}/ToDos, but expected System.Collections.Generic.List`1[System.Int32]",
-                                            actualAsyncResult.Message);
+            Assert.AreEqual($"Received Array for API call {kinveyClient.BaseUrl}appdata/{AppKey}/ToDos, but expected System.Collections.Generic.List`1[System.Int32]", actualAsyncResult.Message);
+            Assert.AreEqual(EnumErrorCategory.ERROR_DATASTORE_NETWORK, actualAsyncResult.ErrorCategory);
+            Assert.AreEqual(EnumErrorCode.ERROR_JSON_PARSE, actualAsyncResult.ErrorCode);
+        }
+
+        [TestMethod]
+        public async Task TestThrowInvalidCastExceptionInBuildDeleteRequest()
+        {
+            // Setup
+            if (MockData)
+            {
+                MockResponses(3);
+            }
+
+            await User.LoginAsync(TestSetup.user, TestSetup.pass, kinveyClient);
+
+            var newItem = new ToDo
+            {
+                Name = "Next Task",
+                Details = "A test",
+                DueDate = "2016-04-19T20:02:17.635Z"
+            };
+
+            var todoStore = DataStore<ToDo>.Collection(toDosCollection, DataStoreType.NETWORK);
+
+            var savedItem = await todoStore.SaveAsync(newItem);
+
+            // Arrange
+            var buildDeleteRequest = kinveyClient.NetworkFactory.buildDeleteRequest<JArray>(toDosCollection, savedItem.ID);
+
+            // Act
+            var actualAsyncResult = await Assert.ThrowsExceptionAsync<KinveyException>(async () => await buildDeleteRequest.ExecuteAsync());
+
+            // Assert
+            Assert.IsNotNull(actualAsyncResult);
+            Assert.IsNotNull(actualAsyncResult.Message);
+            Assert.AreEqual($"Received Object for API call {kinveyClient.BaseUrl}appdata/{AppKey}/ToDos/{savedItem.ID}, but expected Newtonsoft.Json.Linq.JArray", actualAsyncResult.Message);
             Assert.AreEqual(EnumErrorCategory.ERROR_DATASTORE_NETWORK, actualAsyncResult.ErrorCategory);
             Assert.AreEqual(EnumErrorCode.ERROR_JSON_PARSE, actualAsyncResult.ErrorCode);
         }
